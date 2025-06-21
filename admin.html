@@ -6,44 +6,60 @@
     <title>管理中心 - 书籍验证系统</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 40px;
+            background: #ffffff;
+            border: 2px solid #000000;
+        }
+        
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #000000;
+            background: #ffffff;
+            color: #000000;
+            font-size: 1em;
+        }
+        
         .admin-container {
-            max-width: 1000px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
         
         .stat-card {
-            background: white;
+            background: #ffffff;
             padding: 20px;
-            border-radius: 15px;
+            border: 1px solid #000000;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         
         .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #667eea;
+            font-size: 2em;
+            font-weight: 300;
+            color: #000000;
             margin-bottom: 10px;
         }
         
         .stat-label {
-            color: #666;
-            font-size: 1.1em;
+            color: #000000;
+            font-size: 0.9em;
         }
         
         .data-table {
-            background: white;
-            border-radius: 15px;
+            background: #ffffff;
+            border: 1px solid #000000;
             padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             overflow-x: auto;
         }
         
@@ -53,32 +69,33 @@
         }
         
         th, td {
-            padding: 12px;
+            padding: 10px;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #e0e0e0;
+            color: #000000;
         }
         
         th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #333;
+            background: #f8f8f8;
+            font-weight: 500;
+            border-bottom: 2px solid #000000;
         }
         
         .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
+            padding: 2px 8px;
+            border: 1px solid #000000;
+            font-size: 0.8em;
+            font-weight: 400;
         }
         
         .status-activated {
-            background: #d4edda;
-            color: #155724;
+            background: #000000;
+            color: #ffffff;
         }
         
         .status-pending {
-            background: #fff3cd;
-            color: #856404;
+            background: #ffffff;
+            color: #000000;
         }
         
         .filter-section {
@@ -90,272 +107,256 @@
         }
         
         .filter-input {
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 25px;
-            font-size: 1em;
-            min-width: 200px;
+            padding: 8px 12px;
+            border: 1px solid #000000;
+            background: #ffffff;
+            color: #000000;
+            font-size: 0.9em;
+            min-width: 150px;
         }
         
-        .export-btn {
-            background: #28a745;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s ease;
-        }
-        
-        .export-btn:hover {
-            background: #218838;
-            transform: translateY(-2px);
-        }
-        
-        .charts-section {
-            margin-top: 30px;
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        .chart-container {
-            height: 300px;
-            margin-top: 20px;
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="admin-container">
+    <!-- 登录界面 -->
+    <div class="login-container" id="loginSection">
         <div class="header">
-            <h1>📊 管理中心</h1>
-            <p class="subtitle">书籍验证系统数据统计</p>
+            <h1>管理中心</h1>
+            <p class="subtitle">请输入管理密码</p>
+        </div>
+        
+        <input type="password" id="passwordInput" class="login-input" placeholder="管理密码" autocomplete="off">
+        <button class="btn btn-primary" onclick="login()" style="width: 100%; margin-top: 10px;">登录</button>
+        
+        <div id="loginError" class="hidden" style="color: #000000; margin-top: 10px; text-align: center;">
+            密码错误，请重试
+        </div>
+    </div>
+
+    <!-- 管理界面 -->
+    <div class="admin-container hidden" id="adminSection">
+        <div class="header">
+            <h1>管理中心</h1>
+            <p class="subtitle">激活数据统计</p>
         </div>
 
         <!-- 统计卡片 -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number" id="totalCodes">0</div>
-                <div class="stat-label">总验证码数</div>
+                <div class="stat-number" id="totalActivations">0</div>
+                <div class="stat-label">总激活次数</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="activatedCodes">0</div>
-                <div class="stat-label">已激活数量</div>
+                <div class="stat-number" id="todayActivations">0</div>
+                <div class="stat-label">今日激活</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="pendingCodes">0</div>
-                <div class="stat-label">待激活数量</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="activationRate">0%</div>
-                <div class="stat-label">激活率</div>
+                <div class="stat-number" id="uniqueCodes">0</div>
+                <div class="stat-label">独立验证码</div>
             </div>
         </div>
 
-        <!-- 筛选和导出 -->
+        <!-- 筛选和操作 -->
         <div class="filter-section">
             <input type="text" id="searchInput" class="filter-input" placeholder="搜索验证码...">
-            <select id="statusFilter" class="filter-input">
-                <option value="">所有状态</option>
-                <option value="activated">已激活</option>
-                <option value="pending">待激活</option>
-            </select>
-            <button class="export-btn" onclick="exportData()">📥 导出数据</button>
-            <button class="export-btn" onclick="refreshData()">🔄 刷新数据</button>
+            <input type="date" id="dateFilter" class="filter-input">
+            <button class="btn btn-secondary" onclick="exportData()">导出数据</button>
+            <button class="btn btn-secondary" onclick="clearData()">清空数据</button>
+            <button class="btn btn-secondary" onclick="logout()">退出登录</button>
         </div>
 
         <!-- 数据表格 -->
         <div class="data-table">
-            <h3>验证码详情</h3>
-            <table id="codesTable">
+            <h3>激活记录</h3>
+            <table>
                 <thead>
                     <tr>
                         <th>验证码</th>
-                        <th>创建时间</th>
-                        <th>状态</th>
                         <th>激活时间</th>
-                        <th>操作</th>
+                        <th>设备信息</th>
+                        <th>时区</th>
                     </tr>
                 </thead>
-                <tbody id="codesTableBody">
+                <tbody id="activationsTableBody">
                     <!-- 数据将通过JavaScript动态插入 -->
                 </tbody>
             </table>
-        </div>
-
-        <!-- 图表区域 -->
-        <div class="charts-section">
-            <h3>激活趋势</h3>
-            <div class="chart-container" id="chartContainer">
-                <canvas id="activationChart"></canvas>
+            
+            <div id="noDataMessage" class="hidden" style="text-align: center; padding: 40px; color: #666666;">
+                暂无激活记录
             </div>
         </div>
     </div>
 
     <script>
+        // 管理密码（实际使用时请修改）
+        const ADMIN_PASSWORD = 'admin123';
+        
         class AdminPanel {
             constructor() {
-                this.codes = [];
-                this.filteredCodes = [];
+                this.activations = [];
                 this.init();
             }
 
-            async init() {
-                await this.loadData();
-                this.setupEventListeners();
-                this.updateStats();
-                this.renderTable();
+            init() {
+                // 检查是否已登录
+                if (localStorage.getItem('adminLoggedIn') === 'true') {
+                    this.showAdmin();
+                } else {
+                    this.showLogin();
+                }
             }
 
-            async loadData() {
+            showLogin() {
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('adminSection').classList.add('hidden');
+                
+                // 回车键登录
+                document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.login();
+                    }
+                });
+            }
+
+            showAdmin() {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('adminSection').classList.remove('hidden');
+                this.loadData();
+                this.setupEventListeners();
+            }
+
+            login() {
+                const password = document.getElementById('passwordInput').value;
+                if (password === ADMIN_PASSWORD) {
+                    localStorage.setItem('adminLoggedIn', 'true');
+                    this.showAdmin();
+                } else {
+                    document.getElementById('loginError').classList.remove('hidden');
+                    document.getElementById('passwordInput').value = '';
+                    setTimeout(() => {
+                        document.getElementById('loginError').classList.add('hidden');
+                    }, 3000);
+                }
+            }
+
+            logout() {
+                localStorage.removeItem('adminLoggedIn');
+                this.showLogin();
+                document.getElementById('passwordInput').value = '';
+            }
+
+            loadData() {
                 try {
-                    // 从本地存储加载数据（演示用）
-                    const codesData = localStorage.getItem('codes');
+                    // 从本地存储加载真实的激活数据
                     const activationsData = localStorage.getItem('activations');
-                    
-                    if (codesData) {
-                        this.codes = JSON.parse(codesData);
-                    } else {
-                        // 生成一些示例数据
-                        this.codes = this.generateSampleData();
-                        localStorage.setItem('codes', JSON.stringify(this.codes));
-                    }
-
-                    // 合并激活数据
                     if (activationsData) {
-                        const activations = JSON.parse(activationsData);
-                        this.mergeActivationData(activations);
+                        this.activations = JSON.parse(activationsData);
+                    } else {
+                        this.activations = [];
                     }
-
-                    this.filteredCodes = [...this.codes];
+                    
+                    this.updateStats();
+                    this.renderTable();
                     
                 } catch (error) {
                     console.error('加载数据失败:', error);
-                    this.codes = this.generateSampleData();
-                    this.filteredCodes = [...this.codes];
+                    this.activations = [];
+                    this.updateStats();
+                    this.renderTable();
                 }
-            }
-
-            generateSampleData() {
-                const sampleCodes = [];
-                const statuses = ['activated', 'pending'];
-                
-                for (let i = 0; i < 20; i++) {
-                    const code = this.generateRandomCode();
-                    const status = statuses[Math.floor(Math.random() * statuses.length)];
-                    const createdDate = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
-                    
-                    sampleCodes.push({
-                        code: code,
-                        created_date: createdDate.toISOString(),
-                        activated: status === 'activated',
-                        activation_date: status === 'activated' ? 
-                            new Date(createdDate.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : 
-                            null
-                    });
-                }
-                
-                return sampleCodes;
-            }
-
-            generateRandomCode() {
-                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-                let code = '';
-                for (let i = 0; i < 12; i++) {
-                    code += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                return code;
-            }
-
-            mergeActivationData(activations) {
-                activations.forEach(activation => {
-                    const code = this.codes.find(c => c.code === activation.code);
-                    if (code && !code.activated) {
-                        code.activated = true;
-                        code.activation_date = activation.activation_time;
-                    }
-                });
             }
 
             setupEventListeners() {
-                document.getElementById('searchInput').addEventListener('input', (e) => {
-                    this.filterCodes();
+                document.getElementById('searchInput').addEventListener('input', () => {
+                    this.renderTable();
                 });
 
-                document.getElementById('statusFilter').addEventListener('change', (e) => {
-                    this.filterCodes();
+                document.getElementById('dateFilter').addEventListener('change', () => {
+                    this.renderTable();
                 });
-            }
-
-            filterCodes() {
-                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-                const statusFilter = document.getElementById('statusFilter').value;
-
-                this.filteredCodes = this.codes.filter(code => {
-                    const matchesSearch = code.code.toLowerCase().includes(searchTerm);
-                    const matchesStatus = !statusFilter || 
-                        (statusFilter === 'activated' && code.activated) ||
-                        (statusFilter === 'pending' && !code.activated);
-                    
-                    return matchesSearch && matchesStatus;
-                });
-
-                this.renderTable();
             }
 
             updateStats() {
-                const total = this.codes.length;
-                const activated = this.codes.filter(c => c.activated).length;
-                const pending = total - activated;
-                const rate = total > 0 ? Math.round((activated / total) * 100) : 0;
+                const total = this.activations.length;
+                
+                // 计算今日激活数
+                const today = new Date().toDateString();
+                const todayCount = this.activations.filter(activation => {
+                    return new Date(activation.activation_time).toDateString() === today;
+                }).length;
 
-                document.getElementById('totalCodes').textContent = total;
-                document.getElementById('activatedCodes').textContent = activated;
-                document.getElementById('pendingCodes').textContent = pending;
-                document.getElementById('activationRate').textContent = rate + '%';
+                // 计算独立验证码数
+                const uniqueCodes = new Set(this.activations.map(a => a.code)).size;
+
+                document.getElementById('totalActivations').textContent = total;
+                document.getElementById('todayActivations').textContent = todayCount;
+                document.getElementById('uniqueCodes').textContent = uniqueCodes;
             }
 
             renderTable() {
-                const tbody = document.getElementById('codesTableBody');
+                const tbody = document.getElementById('activationsTableBody');
+                const noDataMessage = document.getElementById('noDataMessage');
+                
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                const dateFilter = document.getElementById('dateFilter').value;
+
+                let filteredData = this.activations;
+
+                // 搜索过滤
+                if (searchTerm) {
+                    filteredData = filteredData.filter(activation => 
+                        activation.code.toLowerCase().includes(searchTerm)
+                    );
+                }
+
+                // 日期过滤
+                if (dateFilter) {
+                    filteredData = filteredData.filter(activation => {
+                        const activationDate = new Date(activation.activation_time).toDateString();
+                        const filterDate = new Date(dateFilter).toDateString();
+                        return activationDate === filterDate;
+                    });
+                }
+
                 tbody.innerHTML = '';
 
-                this.filteredCodes.forEach(code => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><strong>${code.code}</strong></td>
-                        <td>${new Date(code.created_date).toLocaleString('zh-CN')}</td>
-                        <td>
-                            <span class="status-badge ${code.activated ? 'status-activated' : 'status-pending'}">
-                                ${code.activated ? '已激活' : '待激活'}
-                            </span>
-                        </td>
-                        <td>${code.activation_date ? new Date(code.activation_date).toLocaleString('zh-CN') : '-'}</td>
-                        <td>
-                            <button onclick="admin.viewDetails('${code.code}')" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8em;">
-                                查看详情
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
-
-            viewDetails(code) {
-                const codeData = this.codes.find(c => c.code === code);
-                if (codeData) {
-                    const details = `
-验证码：${codeData.code}
-创建时间：${new Date(codeData.created_date).toLocaleString('zh-CN')}
-状态：${codeData.activated ? '已激活' : '待激活'}
-激活时间：${codeData.activation_date ? new Date(codeData.activation_date).toLocaleString('zh-CN') : '未激活'}
-                    `;
-                    alert(details);
+                if (filteredData.length === 0) {
+                    noDataMessage.classList.remove('hidden');
+                } else {
+                    noDataMessage.classList.add('hidden');
+                    
+                    filteredData
+                        .sort((a, b) => new Date(b.activation_time) - new Date(a.activation_time))
+                        .forEach(activation => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td><strong>${activation.code}</strong></td>
+                                <td>${new Date(activation.activation_time).toLocaleString('zh-CN')}</td>
+                                <td>${this.getDeviceInfo(activation)}</td>
+                                <td>${activation.ip_hint?.timezone || '-'}</td>
+                            `;
+                            tbody.appendChild(row);
+                        });
                 }
             }
 
+            getDeviceInfo(activation) {
+                if (activation.ip_hint) {
+                    return `${activation.ip_hint.platform || ''} ${activation.ip_hint.language || ''}`.trim() || '-';
+                }
+                return '-';
+            }
+
             exportData() {
+                if (this.activations.length === 0) {
+                    alert('没有数据可导出');
+                    return;
+                }
+
                 const csvContent = this.generateCSV();
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a');
@@ -363,7 +364,7 @@
                 if (link.download !== undefined) {
                     const url = URL.createObjectURL(blob);
                     link.setAttribute('href', url);
-                    link.setAttribute('download', `verification_codes_${new Date().toISOString().split('T')[0]}.csv`);
+                    link.setAttribute('download', `activations_${new Date().toISOString().split('T')[0]}.csv`);
                     link.style.visibility = 'hidden';
                     document.body.appendChild(link);
                     link.click();
@@ -372,41 +373,52 @@
             }
 
             generateCSV() {
-                const headers = ['验证码', '创建时间', '状态', '激活时间'];
-                const rows = this.codes.map(code => [
-                    code.code,
-                    new Date(code.created_date).toLocaleString('zh-CN'),
-                    code.activated ? '已激活' : '待激活',
-                    code.activation_date ? new Date(code.activation_date).toLocaleString('zh-CN') : '未激活'
+                const headers = ['验证码', '激活时间', '平台', '语言', '时区'];
+                const rows = this.activations.map(activation => [
+                    activation.code,
+                    new Date(activation.activation_time).toLocaleString('zh-CN'),
+                    activation.ip_hint?.platform || '',
+                    activation.ip_hint?.language || '',
+                    activation.ip_hint?.timezone || ''
                 ]);
 
                 return [headers, ...rows].map(row => row.join(',')).join('\n');
             }
 
-            async refreshData() {
-                await this.loadData();
-                this.updateStats();
-                this.renderTable();
-                alert('数据已刷新');
+            clearData() {
+                if (confirm('确定要清空所有激活数据吗？此操作不可恢复。')) {
+                    localStorage.removeItem('activations');
+                    this.activations = [];
+                    this.updateStats();
+                    this.renderTable();
+                    alert('数据已清空');
+                }
             }
         }
 
-        // 全局变量，供按钮调用
+        // 全局变量和函数
         let admin;
+
+        function login() {
+            admin.login();
+        }
+
+        function logout() {
+            admin.logout();
+        }
+
+        function exportData() {
+            admin.exportData();
+        }
+
+        function clearData() {
+            admin.clearData();
+        }
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', () => {
             admin = new AdminPanel();
         });
-
-        // 全局函数
-        function exportData() {
-            admin.exportData();
-        }
-
-        function refreshData() {
-            admin.refreshData();
-        }
     </script>
 </body>
 </html> 
