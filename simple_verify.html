@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>书籍验证 - 正版验证系统</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📚 书籍验证系统</h1>
+            <h1>书籍验证系统</h1>
             <p class="subtitle">正版图书验证与激活</p>
         </div>
 
@@ -22,8 +21,8 @@
         </div>
 
         <div class="card hidden" id="validCard">
-            <div class="success-icon">✅</div>
-            <h2>验证成功！</h2>
+            <div class="success-icon">✓</div>
+            <h2>验证成功</h2>
             <p>这是一本<strong>正版书籍</strong></p>
             <div class="book-info">
                 <p><strong>验证码：</strong><span id="codeDisplay"></span></p>
@@ -32,15 +31,15 @@
             <button id="activateBtn" class="btn btn-primary">立即激活</button>
             <div class="activation-result hidden" id="activationResult">
                 <div class="success-message">
-                    <h3>🎉 激活成功！</h3>
+                    <h3>激活成功</h3>
                     <p>激活时间：<span id="activationTime"></span></p>
-                    <p class="note">感谢您购买正版图书！</p>
+                    <p class="note">感谢您购买正版图书</p>
                 </div>
             </div>
         </div>
 
         <div class="card hidden" id="invalidCard">
-            <div class="error-icon">❌</div>
+            <div class="error-icon">×</div>
             <h2>验证失败</h2>
             <p>此验证码无效或不存在</p>
             <div class="error-details">
@@ -55,7 +54,7 @@
         </div>
 
         <div class="card hidden" id="alreadyActivatedCard">
-            <div class="info-icon">ℹ️</div>
+            <div class="info-icon">i</div>
             <h2>已激活</h2>
             <p>此验证码已经激活过了</p>
             <div class="activation-info">
@@ -65,17 +64,15 @@
         </div>
 
         <div class="footer">
-            <p>© 2024 正版验证系统</p>
+            <p>正版验证系统</p>
             <p><small>如有问题，请联系客服</small></p>
         </div>
     </div>
 
     <script>
         // 这里存储所有有效的验证码
-        // 实际部署时，这个数组将通过Python脚本自动生成和更新
         const VALID_CODES = [
-            'Y9XS27EQ4U44',
-            'QF7H2TACKXDT'
+            'H6ECZFDK9JF8'
         ];
 
         class SimpleBookVerifier {
@@ -84,7 +81,7 @@
             }
 
             init() {
-                // 延迟1秒显示验证结果，增加真实感
+                // 延迟1秒显示验证结果
                 setTimeout(() => {
                     const urlParams = new URLSearchParams(window.location.search);
                     const code = urlParams.get('code');
