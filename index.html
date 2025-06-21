@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书籍验证 - 正版验证系统</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 书籍验证系统</h1>
+            <p class="subtitle">正版图书验证与激活</p>
+        </div>
+
+        <div class="card" id="loadingCard">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>正在验证中...</p>
+            </div>
+        </div>
+
+        <div class="card hidden" id="validCard">
+            <div class="success-icon">✅</div>
+            <h2>验证成功！</h2>
+            <p>这是一本<strong>正版书籍</strong></p>
+            <div class="book-info">
+                <p><strong>验证码：</strong><span id="codeDisplay"></span></p>
+                <p><strong>验证时间：</strong><span id="verifyTime"></span></p>
+            </div>
+            <button id="activateBtn" class="btn btn-primary">立即激活</button>
+            <div class="activation-result hidden" id="activationResult">
+                <div class="success-message">
+                    <h3>🎉 激活成功！</h3>
+                    <p>激活时间：<span id="activationTime"></span></p>
+                    <p class="note">感谢您购买正版图书！</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card hidden" id="invalidCard">
+            <div class="error-icon">❌</div>
+            <h2>验证失败</h2>
+            <p>此验证码无效或不存在</p>
+            <div class="error-details">
+                <p>可能的原因：</p>
+                <ul>
+                    <li>验证码不正确</li>
+                    <li>二维码已损坏</li>
+                    <li>非正版图书</li>
+                </ul>
+            </div>
+            <button class="btn btn-secondary" onclick="location.reload()">重新验证</button>
+        </div>
+
+        <div class="card hidden" id="alreadyActivatedCard">
+            <div class="info-icon">ℹ️</div>
+            <h2>已激活</h2>
+            <p>此验证码已经激活过了</p>
+            <div class="activation-info">
+                <p><strong>激活时间：</strong><span id="existingActivationTime"></span></p>
+                <p class="note">每个验证码只能激活一次</p>
+            </div>
+        </div>
+
+        <div class="card hidden" id="errorCard">
+            <div class="error-icon">⚠️</div>
+            <h2>网络错误</h2>
+            <p>无法连接到验证服务器</p>
+            <button class="btn btn-secondary" onclick="location.reload()">重试</button>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 正版验证系统</p>
+            <p><small>如有问题，请联系客服</small></p>
+        </div>
+    </div>
+
+    <script>
+        class BookVerifier {
+            constructor() {
+                this.apiBase = 'https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/contents/data';
+                this.token = 'YOUR_GITHUB_TOKEN'; // 需要配置GitHub token
+                this.init();
+            }
+
+            init() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
+                
+                if (!code) {
+                    this.showError('缺少验证码参数');
+                    return;
+                }
+
+                this.verifyCode(code);
+            }
+
+            async verifyCode(code) {
+                try {
+                    // 获取验证码数据
+                    const codesData = await this.fetchCodesData();
+                    const codeInfo = codesData.find(item => item.code === code);
+
+                    if (!codeInfo) {
+                        this.showInvalid();
+                        return;
+                    }
+
+                    document.getElementById('codeDisplay').textContent = code;
+                    document.getElementById('verifyTime').textContent = new Date().toLocaleString('zh-CN');
+
+                    if (codeInfo.activated) {
+                        this.showAlreadyActivated(codeInfo.activation_date);
+                    } else {
+                        this.showValid(code, codeInfo);
+                    }
+
+                } catch (error) {
+                    console.error('验证失败:', error);
+                    this.showError('验证过程中发生错误');
+                }
+            }
+
+            async fetchCodesData() {
+                // 这里使用GitHub API作为数据源
+                // 实际部署时需要配置GitHub token
+                const response = await fetch(`${this.apiBase}/codes.json`, {
+                    headers: {
+                        'Authorization': `token ${this.token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('无法获取验证数据');
+                }
+
+                const data = await response.json();
+                const content = atob(data.content);
+                return JSON.parse(content);
+            }
+
+            async activateCode(code, codeInfo) {
+                try {
+                    // 更新激活状态
+                    const activationTime = new Date().toISOString();
+                    
+                    // 更新本地显示
+                    document.getElementById('activationTime').textContent = new Date().toLocaleString('zh-CN');
+                    document.getElementById('activationResult').classList.remove('hidden');
+                    document.getElementById('activateBtn').style.display = 'none';
+
+                    // 记录激活信息到本地存储（临时方案）
+                    const activations = JSON.parse(localStorage.getItem('activations') || '[]');
+                    activations.push({
+                        code: code,
+                        activation_time: activationTime,
+                        user_agent: navigator.userAgent,
+                        timestamp: Date.now()
+                    });
+                    localStorage.setItem('activations', JSON.stringify(activations));
+
+                    // 实际部署时，这里应该调用GitHub API更新数据
+                    // await this.updateCodeData(code, activationTime);
+
+                } catch (error) {
+                    console.error('激活失败:', error);
+                    alert('激活失败，请重试');
+                }
+            }
+
+            showValid(code, codeInfo) {
+                this.hideAllCards();
+                document.getElementById('validCard').classList.remove('hidden');
+                
+                document.getElementById('activateBtn').onclick = () => {
+                    this.activateCode(code, codeInfo);
+                };
+            }
+
+            showInvalid() {
+                this.hideAllCards();
+                document.getElementById('invalidCard').classList.remove('hidden');
+            }
+
+            showAlreadyActivated(activationDate) {
+                this.hideAllCards();
+                document.getElementById('alreadyActivatedCard').classList.remove('hidden');
+                document.getElementById('existingActivationTime').textContent = 
+                    new Date(activationDate).toLocaleString('zh-CN');
+            }
+
+            showError(message) {
+                this.hideAllCards();
+                document.getElementById('errorCard').classList.remove('hidden');
+                document.getElementById('errorCard').querySelector('p').textContent = message;
+            }
+
+            hideAllCards() {
+                document.querySelectorAll('.card').forEach(card => {
+                    card.classList.add('hidden');
+                });
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            new BookVerifier();
+        });
+    </script>
+</body>
+</html> 
