@@ -3,421 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理中心 - 乐谱验证系统</title>
+    <title>书籍验证 - 正版验证系统</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .login-container {
-            max-width: 400px;
-            margin: 50px auto;
-            padding: 40px;
-            background: #ffffff;
-            border: 2px solid #000000;
-        }
-        
-        .login-input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #000000;
-            background: #ffffff;
-            color: #000000;
-            font-size: 1em;
-        }
-        
-        .admin-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: #ffffff;
-            padding: 20px;
-            border: 1px solid #000000;
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 2em;
-            font-weight: 300;
-            color: #000000;
-            margin-bottom: 10px;
-        }
-        
-        .stat-label {
-            color: #000000;
-            font-size: 0.9em;
-        }
-        
-        .data-table {
-            background: #ffffff;
-            border: 1px solid #000000;
-            padding: 20px;
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-            color: #000000;
-        }
-        
-        th {
-            background: #f8f8f8;
-            font-weight: 500;
-            border-bottom: 2px solid #000000;
-        }
-        
-        .status-badge {
-            padding: 2px 8px;
-            border: 1px solid #000000;
-            font-size: 0.8em;
-            font-weight: 400;
-        }
-        
-        .status-activated {
-            background: #000000;
-            color: #ffffff;
-        }
-        
-        .status-pending {
-            background: #ffffff;
-            color: #000000;
-        }
-        
-        .filter-section {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        
-        .filter-input {
-            padding: 8px 12px;
-            border: 1px solid #000000;
-            background: #ffffff;
-            color: #000000;
-            font-size: 0.9em;
-            min-width: 150px;
-        }
-        
-        .hidden {
-            display: none;
-        }
-    </style>
 </head>
 <body>
-    <!-- 登录界面 -->
-    <div class="login-container" id="loginSection">
+    <div class="container">
         <div class="header">
-            <h1>管理中心</h1>
-            <p class="subtitle">请输入管理密码</p>
-        </div>
-        
-        <input type="password" id="passwordInput" class="login-input" placeholder="管理密码" autocomplete="off">
-        <button class="btn btn-primary" onclick="login()" style="width: 100%; margin-top: 10px;">登录</button>
-        
-        <div id="loginError" class="hidden" style="color: #000000; margin-top: 10px; text-align: center;">
-            密码错误，请重试
-        </div>
-    </div>
-
-    <!-- 管理界面 -->
-    <div class="admin-container hidden" id="adminSection">
-        <div class="header">
-            <h1>管理中心</h1>
-            <p class="subtitle">激活数据统计</p>
+            <h1>乐谱验证系统</h1>
+            <p class="subtitle">正版乐谱验证与激活</p>
         </div>
 
-        <!-- 统计卡片 -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number" id="totalActivations">0</div>
-                <div class="stat-label">总激活次数</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="todayActivations">0</div>
-                <div class="stat-label">今日激活</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="uniqueCodes">0</div>
-                <div class="stat-label">独立验证码</div>
+        <div class="card" id="loadingCard">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>正在验证中...</p>
             </div>
         </div>
 
-        <!-- 筛选和操作 -->
-        <div class="filter-section">
-            <input type="text" id="searchInput" class="filter-input" placeholder="搜索验证码...">
-            <input type="date" id="dateFilter" class="filter-input">
-            <button class="btn btn-secondary" onclick="exportData()">导出数据</button>
-            <button class="btn btn-secondary" onclick="clearData()">清空数据</button>
-            <button class="btn btn-secondary" onclick="logout()">退出登录</button>
+        <div class="card hidden" id="validCard">
+            <div class="success-icon">✓</div>
+            <h2>验证成功</h2>
+            <p>这是一本<strong>正版乐谱</strong></p>
+            <div class="book-info">
+                <p><strong>验证码：</strong><span id="codeDisplay"></span></p>
+                <p><strong>验证时间：</strong><span id="verifyTime"></span></p>
+            </div>
+            <button id="activateBtn" class="btn btn-primary">立即激活</button>
+            <div class="activation-result hidden" id="activationResult">
+                <div class="success-message">
+                    <h3>激活成功</h3>
+                    <p>激活时间：<span id="activationTime"></span></p>
+                    <p class="note">感谢您购买正版乐谱</p>
+                </div>
+            </div>
         </div>
 
-        <!-- 数据表格 -->
-        <div class="data-table">
-            <h3>激活记录</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>验证码</th>
-                        <th>激活时间</th>
-                        <th>设备信息</th>
-                        <th>时区</th>
-                    </tr>
-                </thead>
-                <tbody id="activationsTableBody">
-                    <!-- 数据将通过JavaScript动态插入 -->
-                </tbody>
-            </table>
-            
-            <div id="noDataMessage" class="hidden" style="text-align: center; padding: 40px; color: #666666;">
-                暂无激活记录
+        <div class="card hidden" id="invalidCard">
+            <div class="error-icon">❌</div>
+            <h2>验证失败</h2>
+            <p>此验证码无效或不存在</p>
+            <div class="error-details">
+                <p>可能的原因：</p>
+                <ul>
+                    <li>验证码不正确</li>
+                    <li>二维码已损坏</li>
+                    <li>非正版乐谱</li>
+                </ul>
             </div>
+            <button class="btn btn-secondary" onclick="location.reload()">重新验证</button>
+        </div>
+
+        <div class="card hidden" id="alreadyActivatedCard">
+            <div class="info-icon">i</div>
+            <h2>已激活</h2>
+            <p>此验证码已经激活过了</p>
+            <div class="activation-info">
+                <p><strong>激活时间：</strong><span id="existingActivationTime"></span></p>
+                <p class="note">每个验证码只能激活一次</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>正版乐谱验证系统 - Yuze Pan</p>
+            <p><small>如有问题，请联系vx:Guitar_yuze</small></p>
         </div>
     </div>
 
     <script>
-        // 管理密码（实际使用时请修改）
-        const ADMIN_PASSWORD = 'admin123';
-        
-        class AdminPanel {
+        // 这里存储所有有效的验证码
+        const VALID_CODES = [];
+
+        class SimpleBookVerifier {
             constructor() {
-                this.activations = [];
                 this.init();
             }
 
             init() {
-                // 检查是否已登录
-                if (localStorage.getItem('adminLoggedIn') === 'true') {
-                    this.showAdmin();
-                } else {
-                    this.showLogin();
-                }
-            }
-
-            showLogin() {
-                document.getElementById('loginSection').classList.remove('hidden');
-                document.getElementById('adminSection').classList.add('hidden');
-                
-                // 回车键登录
-                document.getElementById('passwordInput').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        this.login();
+                // 延迟1秒显示验证结果
+                setTimeout(() => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const code = urlParams.get('code');
+                    
+                    if (!code) {
+                        this.showInvalid();
+                        return;
                     }
-                });
+
+                    this.verifyCode(code);
+                }, 1000);
             }
 
-            showAdmin() {
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('adminSection').classList.remove('hidden');
-                this.loadData();
-                this.setupEventListeners();
-            }
-
-            login() {
-                const password = document.getElementById('passwordInput').value;
-                if (password === ADMIN_PASSWORD) {
-                    localStorage.setItem('adminLoggedIn', 'true');
-                    this.showAdmin();
-                } else {
-                    document.getElementById('loginError').classList.remove('hidden');
-                    document.getElementById('passwordInput').value = '';
-                    setTimeout(() => {
-                        document.getElementById('loginError').classList.add('hidden');
-                    }, 3000);
-                }
-            }
-
-            logout() {
-                localStorage.removeItem('adminLoggedIn');
-                this.showLogin();
-                document.getElementById('passwordInput').value = '';
-            }
-
-            loadData() {
-                try {
-                    // 从本地存储加载真实的激活数据
-                    const activationsData = localStorage.getItem('activations');
-                    if (activationsData) {
-                        this.activations = JSON.parse(activationsData);
-                    } else {
-                        this.activations = [];
-                    }
-                    
-                    this.updateStats();
-                    this.renderTable();
-                    
-                } catch (error) {
-                    console.error('加载数据失败:', error);
-                    this.activations = [];
-                    this.updateStats();
-                    this.renderTable();
-                }
-            }
-
-            setupEventListeners() {
-                document.getElementById('searchInput').addEventListener('input', () => {
-                    this.renderTable();
-                });
-
-                document.getElementById('dateFilter').addEventListener('change', () => {
-                    this.renderTable();
-                });
-            }
-
-            updateStats() {
-                const total = this.activations.length;
-                
-                // 计算今日激活数
-                const today = new Date().toDateString();
-                const todayCount = this.activations.filter(activation => {
-                    return new Date(activation.activation_time).toDateString() === today;
-                }).length;
-
-                // 计算独立验证码数
-                const uniqueCodes = new Set(this.activations.map(a => a.code)).size;
-
-                document.getElementById('totalActivations').textContent = total;
-                document.getElementById('todayActivations').textContent = todayCount;
-                document.getElementById('uniqueCodes').textContent = uniqueCodes;
-            }
-
-            renderTable() {
-                const tbody = document.getElementById('activationsTableBody');
-                const noDataMessage = document.getElementById('noDataMessage');
-                
-                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-                const dateFilter = document.getElementById('dateFilter').value;
-
-                let filteredData = this.activations;
-
-                // 搜索过滤
-                if (searchTerm) {
-                    filteredData = filteredData.filter(activation => 
-                        activation.code.toLowerCase().includes(searchTerm)
-                    );
-                }
-
-                // 日期过滤
-                if (dateFilter) {
-                    filteredData = filteredData.filter(activation => {
-                        const activationDate = new Date(activation.activation_time).toDateString();
-                        const filterDate = new Date(dateFilter).toDateString();
-                        return activationDate === filterDate;
-                    });
-                }
-
-                tbody.innerHTML = '';
-
-                if (filteredData.length === 0) {
-                    noDataMessage.classList.remove('hidden');
-                } else {
-                    noDataMessage.classList.add('hidden');
-                    
-                    filteredData
-                        .sort((a, b) => new Date(b.activation_time) - new Date(a.activation_time))
-                        .forEach(activation => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td><strong>${activation.code}</strong></td>
-                                <td>${new Date(activation.activation_time).toLocaleString('zh-CN')}</td>
-                                <td>${this.getDeviceInfo(activation)}</td>
-                                <td>${activation.ip_hint?.timezone || '-'}</td>
-                            `;
-                            tbody.appendChild(row);
-                        });
-                }
-            }
-
-            getDeviceInfo(activation) {
-                if (activation.ip_hint) {
-                    return `${activation.ip_hint.platform || ''} ${activation.ip_hint.language || ''}`.trim() || '-';
-                }
-                return '-';
-            }
-
-            exportData() {
-                if (this.activations.length === 0) {
-                    alert('没有数据可导出');
+            verifyCode(code) {
+                // 检查验证码是否有效
+                if (!this.isValidCode(code)) {
+                    this.showInvalid();
                     return;
                 }
 
-                const csvContent = this.generateCSV();
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
+                // 检查是否已经激活过
+                const activationKey = `activated_${code}`;
+                const existingActivation = localStorage.getItem(activationKey);
                 
-                if (link.download !== undefined) {
-                    const url = URL.createObjectURL(blob);
-                    link.setAttribute('href', url);
-                    link.setAttribute('download', `activations_${new Date().toISOString().split('T')[0]}.csv`);
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                if (existingActivation) {
+                    this.showAlreadyActivated(existingActivation);
+                    return;
                 }
+
+                // 显示验证成功页面
+                this.showValid(code);
             }
 
-            generateCSV() {
-                const headers = ['验证码', '激活时间', '平台', '语言', '时区'];
-                const rows = this.activations.map(activation => [
-                    activation.code,
-                    new Date(activation.activation_time).toLocaleString('zh-CN'),
-                    activation.ip_hint?.platform || '',
-                    activation.ip_hint?.language || '',
-                    activation.ip_hint?.timezone || ''
-                ]);
-
-                return [headers, ...rows].map(row => row.join(',')).join('\n');
+            isValidCode(code) {
+                return VALID_CODES.includes(code);
             }
 
-            clearData() {
-                if (confirm('确定要清空所有激活数据吗？此操作不可恢复。')) {
-                    localStorage.removeItem('activations');
-                    this.activations = [];
-                    this.updateStats();
-                    this.renderTable();
-                    alert('数据已清空');
-                }
+            showValid(code) {
+                document.getElementById('codeDisplay').textContent = code;
+                document.getElementById('verifyTime').textContent = new Date().toLocaleString('zh-CN');
+                
+                this.hideAllCards();
+                document.getElementById('validCard').classList.remove('hidden');
+                
+                document.getElementById('activateBtn').onclick = () => {
+                    this.activateCode(code);
+                };
             }
-        }
 
-        // 全局变量和函数
-        let admin;
+            activateCode(code) {
+                const activationTime = new Date().toISOString();
+                const activationKey = `activated_${code}`;
+                
+                // 保存激活信息到本地存储
+                localStorage.setItem(activationKey, activationTime);
+                
+                // 记录激活统计
+                this.recordActivation(code, activationTime);
+                
+                // 更新显示
+                document.getElementById('activationTime').textContent = new Date().toLocaleString('zh-CN');
+                document.getElementById('activationResult').classList.remove('hidden');
+                document.getElementById('activateBtn').style.display = 'none';
+            }
 
-        function login() {
-            admin.login();
-        }
+            recordActivation(code, activationTime) {
+                // 记录激活信息到统计数据
+                const activations = JSON.parse(localStorage.getItem('activations') || '[]');
+                activations.push({
+                    code: code,
+                    activation_time: activationTime,
+                    user_agent: navigator.userAgent,
+                    timestamp: Date.now(),
+                    ip_hint: this.getIPHint()
+                });
+                localStorage.setItem('activations', JSON.stringify(activations));
+            }
 
-        function logout() {
-            admin.logout();
-        }
+            getIPHint() {
+                // 获取简单的网络信息提示（不涉及隐私）
+                return {
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    language: navigator.language,
+                    platform: navigator.platform
+                };
+            }
 
-        function exportData() {
-            admin.exportData();
-        }
+            showInvalid() {
+                this.hideAllCards();
+                document.getElementById('invalidCard').classList.remove('hidden');
+            }
 
-        function clearData() {
-            admin.clearData();
+            showAlreadyActivated(activationTime) {
+                this.hideAllCards();
+                document.getElementById('alreadyActivatedCard').classList.remove('hidden');
+                document.getElementById('existingActivationTime').textContent = 
+                    new Date(activationTime).toLocaleString('zh-CN');
+            }
+
+            hideAllCards() {
+                document.querySelectorAll('.card').forEach(card => {
+                    card.classList.add('hidden');
+                });
+            }
         }
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', () => {
-            admin = new AdminPanel();
+            new SimpleBookVerifier();
         });
     </script>
 </body>
