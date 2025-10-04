@@ -1,4 +1,4 @@
-/* 乐谱验证系统样式文件 - Supabase版本 - 极简黑白设计 */
+/* 书籍验证系统样式文件 - 极简黑白设计 */
 
 * {
     margin: 0;
@@ -48,8 +48,7 @@ body {
     padding: 40px 30px;
     text-align: center;
     margin-bottom: 20px;
-    transition: all 0.3s ease;
-    animation: fadeIn 0.3s ease-out;
+    transition: all 0.2s ease;
 }
 
 .hidden {
@@ -71,12 +70,6 @@ body {
     border-top: 2px solid #000000;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-}
-
-.loading-detail {
-    font-size: 0.9em;
-    color: #666666;
-    margin-top: -10px;
 }
 
 @keyframes spin {
@@ -144,19 +137,6 @@ p {
     font-weight: 500;
 }
 
-/* 激活信息 */
-.activation-info {
-    background: #f0f0f0;
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin-top: 15px;
-}
-
-.activation-info p {
-    margin-bottom: 5px;
-    color: #000000;
-}
-
 /* 按钮样式 */
 .btn {
     display: inline-block;
@@ -169,17 +149,12 @@ p {
     cursor: pointer;
     transition: all 0.2s ease;
     text-decoration: none;
-    margin: 5px;
-    font-family: inherit;
+    margin: 10px;
 }
 
 .btn:hover {
     background: #000000;
     color: #ffffff;
-}
-
-.btn:active {
-    transform: translateY(1px);
 }
 
 .btn-primary {
@@ -188,8 +163,8 @@ p {
 }
 
 .btn-primary:hover {
-    background: #333333;
-    border-color: #333333;
+    background: #ffffff;
+    color: #000000;
 }
 
 .btn-secondary {
@@ -202,43 +177,21 @@ p {
     color: #ffffff;
 }
 
-/* 操作按钮组 */
-.action-buttons {
+/* 结果区域 */
+.activation-result {
+    background: #f8f8f8;
+    border: 1px solid #000000;
+    padding: 20px;
     margin-top: 20px;
 }
 
-.action-buttons .btn {
-    margin: 5px 10px;
-}
-
-/* 输入组 */
-.input-group {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0;
-    align-items: center;
-}
-
-.input-group input {
-    flex: 1;
-    padding: 12px 16px;
-    border: 2px solid #000000;
-    background: #ffffff;
+.success-message h3 {
     color: #000000;
-    font-size: 1em;
-    font-family: 'Courier', monospace;
-    font-weight: bold;
 }
 
-.input-group input:focus {
-    outline: none;
-    border-color: #333333;
-    background: #f8f8f8;
-}
-
-.input-group input::placeholder {
-    color: #999999;
-    font-weight: normal;
+.success-message p {
+    color: #000000;
+    margin-bottom: 10px;
 }
 
 /* 错误详情 */
@@ -265,6 +218,22 @@ p {
     margin-bottom: 5px;
 }
 
+/* 激活信息 */
+.activation-info {
+    background: #f8f8f8;
+    border: 1px solid #000000;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.activation-info p {
+    color: #000000;
+}
+
+.activation-info strong {
+    color: #000000;
+}
+
 /* 注释文本 */
 .note {
     font-size: 0.9em;
@@ -288,12 +257,6 @@ p {
 
 .footer small {
     font-size: 0.8em;
-}
-
-.tech-info {
-    margin-top: 10px;
-    font-size: 0.75em;
-    color: #999999;
 }
 
 /* 响应式设计 */
@@ -322,21 +285,6 @@ p {
     .success-icon, .error-icon, .info-icon {
         font-size: 2.5em;
     }
-    
-    .input-group {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .input-group input {
-        width: 100%;
-    }
-    
-    .action-buttons .btn {
-        display: block;
-        width: 100%;
-        margin: 10px 0;
-    }
 }
 
 @media (max-width: 480px) {
@@ -359,6 +307,10 @@ p {
 }
 
 /* 简约动画 */
+.card {
+    animation: fadeIn 0.3s ease-out;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -368,52 +320,4 @@ p {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-/* 加载状态的脉冲效果 */
-.loading p {
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.6;
-    }
-}
-
-/* 成功状态的弹跳效果 */
-.success-icon {
-    animation: bounce 0.6s ease-out;
-}
-
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-10px);
-    }
-    60% {
-        transform: translateY(-5px);
-    }
-}
-
-/* 错误状态的摇摆效果 */
-.error-icon {
-    animation: shake 0.5s ease-in-out;
-}
-
-@keyframes shake {
-    0%, 100% {
-        transform: translateX(0);
-    }
-    25% {
-        transform: translateX(-5px);
-    }
-    75% {
-        transform: translateX(5px);
-    }
-}
+} 

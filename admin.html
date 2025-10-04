@@ -3,193 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>书籍验证 - 正版验证系统</title>
-    <link rel="stylesheet" href="style.css">
+    <title>管理后台 - 乐谱验证系统</title>
+    <link rel="stylesheet" href="admin-style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>乐谱验证系统</h1>
-            <p class="subtitle">正版乐谱验证与激活</p>
-        </div>
-
-        <div class="card" id="loadingCard">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>正在验证中...</p>
-            </div>
-        </div>
-
-        <div class="card hidden" id="validCard">
-            <div class="success-icon">✓</div>
-            <h2>验证成功</h2>
-            <p>这是一本<strong>正版乐谱</strong></p>
-            <div class="book-info">
-                <p><strong>验证码：</strong><span id="codeDisplay"></span></p>
-                <p><strong>验证时间：</strong><span id="verifyTime"></span></p>
-            </div>
-            <button id="activateBtn" class="btn btn-primary">立即激活</button>
-            <div class="activation-result hidden" id="activationResult">
-                <div class="success-message">
-                    <h3>激活成功</h3>
-                    <p>激活时间：<span id="activationTime"></span></p>
-                    <p class="note">感谢您购买正版乐谱</p>
+    <!-- 登录界面 -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <h1>🎵 管理后台</h1>
+            <p class="subtitle">乐谱验证系统</p>
+            
+            <div class="login-form">
+                <div class="input-group">
+                    <label>邮箱</label>
+                    <input type="email" id="loginEmail" placeholder="请输入管理员邮箱">
                 </div>
+                <div class="input-group">
+                    <label>密码</label>
+                    <input type="password" id="loginPassword" placeholder="请输入密码">
+                </div>
+                <button class="btn btn-primary" onclick="handleLogin()">登录</button>
+                <p class="error-message hidden" id="loginError"></p>
             </div>
-        </div>
-
-        <div class="card hidden" id="invalidCard">
-            <div class="error-icon">❌</div>
-            <h2>验证失败</h2>
-            <p>此验证码无效或不存在</p>
-            <div class="error-details">
-                <p>可能的原因：</p>
-                <ul>
-                    <li>验证码不正确</li>
-                    <li>二维码已损坏</li>
-                    <li>非正版乐谱</li>
-                </ul>
+            
+            <div class="footer">
+                <p><small>乐谱验证系统 v3.0 - Yuze Pan</small></p>
             </div>
-            <button class="btn btn-secondary" onclick="location.reload()">重新验证</button>
-        </div>
-
-        <div class="card hidden" id="alreadyActivatedCard">
-            <div class="info-icon">i</div>
-            <h2>已激活</h2>
-            <p>此验证码已经激活过了</p>
-            <div class="activation-info">
-                <p><strong>激活时间：</strong><span id="existingActivationTime"></span></p>
-                <p class="note">每个验证码只能激活一次</p>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>正版乐谱验证系统 - Yuze Pan</p>
-            <p><small>如有问题，请联系vx:Guitar_yuze</small></p>
         </div>
     </div>
 
-    <script>
-        // 这里存储所有有效的验证码
-        const VALID_CODES = [];
+    <!-- 管理界面 -->
+    <div class="admin-container hidden" id="adminContainer">
+        <!-- 顶部导航 -->
+        <div class="header">
+            <div class="header-left">
+                <h1>🎵 管理后台</h1>
+            </div>
+            <div class="header-right">
+                <span id="adminEmail"></span>
+                <button class="btn btn-secondary" onclick="handleLogout()">退出</button>
+            </div>
+        </div>
 
-        class SimpleBookVerifier {
-            constructor() {
-                this.init();
-            }
+        <!-- 导航标签 -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('dashboard')">仪表板</button>
+            <button class="tab" onclick="switchTab('codes')">验证码管理</button>
+            <button class="tab" onclick="switchTab('logs')">验证日志</button>
+            <button class="tab" onclick="switchTab('stats')">统计分析</button>
+        </div>
 
-            init() {
-                // 延迟1秒显示验证结果
-                setTimeout(() => {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const code = urlParams.get('code');
-                    
-                    if (!code) {
-                        this.showInvalid();
-                        return;
-                    }
+        <!-- 仪表板 -->
+        <div class="content" id="dashboardContent">
+            <h2>系统概览</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">总验证码数</div>
+                    <div class="stat-value" id="totalCodes">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">已激活</div>
+                    <div class="stat-value" id="activatedCodes">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">未激活</div>
+                    <div class="stat-value" id="pendingCodes">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">激活率</div>
+                    <div class="stat-value" id="activationRate">-</div>
+                </div>
+            </div>
 
-                    this.verifyCode(code);
-                }, 1000);
-            }
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">今日验证次数</div>
+                    <div class="stat-value" id="todayVerifications">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">今日新增激活</div>
+                    <div class="stat-value" id="todayActivations">-</div>
+                </div>
+            </div>
 
-            verifyCode(code) {
-                // 检查验证码是否有效
-                if (!this.isValidCode(code)) {
-                    this.showInvalid();
-                    return;
-                }
+            <div class="action-section">
+                <h3>快速操作</h3>
+                <button class="btn btn-primary" onclick="refreshStats()">刷新统计</button>
+                <button class="btn btn-secondary" onclick="switchTab('codes')">管理验证码</button>
+            </div>
+        </div>
 
-                // 检查是否已经激活过
-                const activationKey = `activated_${code}`;
-                const existingActivation = localStorage.getItem(activationKey);
-                
-                if (existingActivation) {
-                    this.showAlreadyActivated(existingActivation);
-                    return;
-                }
+        <!-- 验证码管理 -->
+        <div class="content hidden" id="codesContent">
+            <h2>验证码管理</h2>
+            
+            <div class="toolbar">
+                <div class="search-box">
+                    <input type="text" id="searchCode" placeholder="搜索验证码...">
+                    <button class="btn btn-primary" onclick="searchCodes()">搜索</button>
+                </div>
+                <div class="filter-box">
+                    <select id="filterStatus" onchange="filterCodes()">
+                        <option value="all">全部</option>
+                        <option value="activated">已激活</option>
+                        <option value="pending">未激活</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="exportCodes()">导出CSV</button>
+                </div>
+            </div>
 
-                // 显示验证成功页面
-                this.showValid(code);
-            }
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>验证码</th>
+                            <th>创建时间</th>
+                            <th>状态</th>
+                            <th>激活时间</th>
+                            <th>验证次数</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="codesTableBody">
+                        <tr>
+                            <td colspan="6" class="loading">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-            isValidCode(code) {
-                return VALID_CODES.includes(code);
-            }
+            <div class="pagination" id="codesPagination">
+                <button class="btn btn-secondary" onclick="prevPage()">上一页</button>
+                <span id="pageInfo">第 1 页</span>
+                <button class="btn btn-secondary" onclick="nextPage()">下一页</button>
+            </div>
+        </div>
 
-            showValid(code) {
-                document.getElementById('codeDisplay').textContent = code;
-                document.getElementById('verifyTime').textContent = new Date().toLocaleString('zh-CN');
-                
-                this.hideAllCards();
-                document.getElementById('validCard').classList.remove('hidden');
-                
-                document.getElementById('activateBtn').onclick = () => {
-                    this.activateCode(code);
-                };
-            }
+        <!-- 验证日志 -->
+        <div class="content hidden" id="logsContent">
+            <h2>验证日志</h2>
+            
+            <div class="toolbar">
+                <div class="filter-box">
+                    <select id="filterResult" onchange="filterLogs()">
+                        <option value="all">全部</option>
+                        <option value="success">成功</option>
+                        <option value="invalid_code">失败</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="refreshLogs()">刷新</button>
+                </div>
+            </div>
 
-            activateCode(code) {
-                const activationTime = new Date().toISOString();
-                const activationKey = `activated_${code}`;
-                
-                // 保存激活信息到本地存储
-                localStorage.setItem(activationKey, activationTime);
-                
-                // 记录激活统计
-                this.recordActivation(code, activationTime);
-                
-                // 更新显示
-                document.getElementById('activationTime').textContent = new Date().toLocaleString('zh-CN');
-                document.getElementById('activationResult').classList.remove('hidden');
-                document.getElementById('activateBtn').style.display = 'none';
-            }
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>验证码</th>
+                            <th>验证时间</th>
+                            <th>结果</th>
+                            <th>IP地址</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <tr>
+                            <td colspan="4" class="loading">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-            recordActivation(code, activationTime) {
-                // 记录激活信息到统计数据
-                const activations = JSON.parse(localStorage.getItem('activations') || '[]');
-                activations.push({
-                    code: code,
-                    activation_time: activationTime,
-                    user_agent: navigator.userAgent,
-                    timestamp: Date.now(),
-                    ip_hint: this.getIPHint()
-                });
-                localStorage.setItem('activations', JSON.stringify(activations));
-            }
+            <div class="pagination" id="logsPagination">
+                <button class="btn btn-secondary" onclick="prevLogPage()">上一页</button>
+                <span id="logPageInfo">第 1 页</span>
+                <button class="btn btn-secondary" onclick="nextLogPage()">下一页</button>
+            </div>
+        </div>
 
-            getIPHint() {
-                // 获取简单的网络信息提示（不涉及隐私）
-                return {
-                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    language: navigator.language,
-                    platform: navigator.platform
-                };
-            }
+        <!-- 统计分析 -->
+        <div class="content hidden" id="statsContent">
+            <h2>统计分析</h2>
+            
+            <div class="stats-section">
+                <h3>每日统计（最近30天）</h3>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>总验证码数</th>
+                                <th>已激活数</th>
+                                <th>今日验证次数</th>
+                                <th>今日新增激活</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dailyStatsBody">
+                            <tr>
+                                <td colspan="5" class="loading">加载中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            showInvalid() {
-                this.hideAllCards();
-                document.getElementById('invalidCard').classList.remove('hidden');
-            }
-
-            showAlreadyActivated(activationTime) {
-                this.hideAllCards();
-                document.getElementById('alreadyActivatedCard').classList.remove('hidden');
-                document.getElementById('existingActivationTime').textContent = 
-                    new Date(activationTime).toLocaleString('zh-CN');
-            }
-
-            hideAllCards() {
-                document.querySelectorAll('.card').forEach(card => {
-                    card.classList.add('hidden');
-                });
-            }
-        }
-
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            new SimpleBookVerifier();
-        });
-    </script>
+    <!-- Supabase客户端库 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 管理后台脚本 -->
+    <script src="admin-script.js"></script>
 </body>
-</html> 
+</html>

@@ -3,212 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>书籍验证 - 正版验证系统</title>
+    <title>乐谱验证系统 - 正版验证</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+    <meta name="description" content="乐谱正版验证系统,扫码验证乐谱真伪">
+    <meta name="keywords" content="乐谱,验证,正版,二维码,Guitar_yuze">
 </head>
 <body>
     <div class="container">
+        <!-- 页面头部 -->
         <div class="header">
-            <h1>乐谱验证系统</h1>
-            <p class="subtitle">正版乐谱验证与激活</p>
+            <h1>🎵 乐谱验证系统</h1>
+            <p class="subtitle">正版乐谱真伪验证</p>
         </div>
 
+        <!-- 加载状态卡片 -->
         <div class="card" id="loadingCard">
             <div class="loading">
                 <div class="spinner"></div>
                 <p>正在验证中...</p>
+                <p class="loading-detail" id="loadingDetail">连接服务器...</p>
             </div>
         </div>
 
+        <!-- 验证成功卡片 -->
         <div class="card hidden" id="validCard">
-            <div class="success-icon">✅</div>
-            <h2>验证成功！</h2>
+            <div class="success-icon">✓</div>
+            <h2>验证成功</h2>
             <p>这是一本<strong>正版乐谱</strong></p>
             <div class="book-info">
-                <p><strong>验证码：</strong><span id="codeDisplay"></span></p>
-                <p><strong>验证时间：</strong><span id="verifyTime"></span></p>
-            </div>
-            <button id="activateBtn" class="btn btn-primary">立即激活</button>
-            <div class="activation-result hidden" id="activationResult">
-                <div class="success-message">
-                    <h3>🎉 激活成功！</h3>
-                    <p>激活时间：<span id="activationTime"></span></p>
-                    <p class="note">感谢您购买正版乐谱！</p>
+                <p><strong>验证码:</strong><span id="codeDisplay"></span></p>
+                <p><strong>验证时间:</strong><span id="verifyTime"></span></p>
+                <p><strong>激活状态:</strong><span id="activationStatus"></span></p>
+                <div id="activationInfo" class="activation-info hidden">
+                    <p><strong>首次激活时间:</strong><span id="activationTime"></span></p>
+                    <p><strong>验证次数:</strong><span id="activationCount"></span></p>
                 </div>
+                <p class="note">感谢您购买正版乐谱</p>
             </div>
         </div>
 
+        <!-- 验证失败卡片 -->
         <div class="card hidden" id="invalidCard">
-            <div class="error-icon">❌</div>
+            <div class="error-icon">×</div>
             <h2>验证失败</h2>
-            <p>此验证码无效或不存在</p>
+            <p id="errorMessage">此验证码无效或不存在</p>
             <div class="error-details">
-                <p>可能的原因：</p>
+                <p>可能的原因:</p>
                 <ul>
                     <li>验证码不正确</li>
                     <li>二维码已损坏</li>
                     <li>非正版乐谱</li>
+                    <li>网络连接问题</li>
                 </ul>
             </div>
-            <button class="btn btn-secondary" onclick="location.reload()">重新验证</button>
-        </div>
-
-        <div class="card hidden" id="alreadyActivatedCard">
-            <div class="info-icon">ℹ️</div>
-            <h2>已激活</h2>
-            <p>此验证码已经激活过了</p>
-            <div class="activation-info">
-                <p><strong>激活时间：</strong><span id="existingActivationTime"></span></p>
-                <p class="note">每个验证码只能激活一次</p>
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="location.reload()">重新验证</button>
+                <button class="btn btn-primary" onclick="showManualInput()">手动输入验证码</button>
             </div>
         </div>
 
-        <div class="card hidden" id="errorCard">
-            <div class="error-icon">⚠️</div>
-            <h2>网络错误</h2>
-            <p>无法连接到验证服务器</p>
-            <button class="btn btn-secondary" onclick="location.reload()">重试</button>
+        <!-- 手动输入卡片 -->
+        <div class="card hidden" id="manualInputCard">
+            <div class="info-icon">ℹ</div>
+            <h2>手动输入验证码</h2>
+            <p>请输入12位验证码</p>
+            <div class="input-group">
+                <input type="text" id="manualCodeInput" placeholder="请输入验证码" maxlength="12" 
+                       style="text-transform: uppercase; letter-spacing: 2px; text-align: center;">
+                <button class="btn btn-primary" onclick="verifyManualCode()">验证</button>
+            </div>
+            <p class="note">验证码通常位于二维码下方</p>
+            <button class="btn btn-secondary" onclick="showMainCards()">返回</button>
         </div>
 
+        <!-- 网络错误卡片 -->
+        <div class="card hidden" id="networkErrorCard">
+            <div class="error-icon">⚠</div>
+            <h2>网络连接错误</h2>
+            <p>无法连接到验证服务器</p>
+            <div class="error-details">
+                <p>请检查:</p>
+                <ul>
+                    <li>网络连接是否正常</li>
+                    <li>是否能访问互联网</li>
+                    <li>稍后重试</li>
+                </ul>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="location.reload()">重新连接</button>
+                <button class="btn btn-secondary" onclick="showManualInput()">手动输入</button>
+            </div>
+        </div>
+
+        <!-- 页面底部 -->
         <div class="footer">
-            <p>© 2025 正版验证系统 - Yuze Pan</p>
-            <p><small>如有问题，请联系vx:Guitar_yuze</small></p>
+            <p>正版乐谱验证系统 v3.0 - Yuze Pan</p>
+            <p><small>如有问题,请联系 vx:Guitar_yuze</small></p>
+            <p class="tech-info"><small>Powered by Supabase</small></p>
         </div>
     </div>
 
+    <!-- Supabase客户端库 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 加载JavaScript -->
+    <script src="script.js"></script>
+    
+    <!-- 错误处理 -->
     <script>
-        class BookVerifier {
-            constructor() {
-                this.apiBase = 'https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/contents/data';
-                this.token = 'YOUR_GITHUB_TOKEN'; // 需要配置GitHub token
-                this.init();
+        window.addEventListener('error', function(e) {
+            console.error('页面错误:', e.error);
+            if (e.filename && e.filename.includes('script.js')) {
+                document.getElementById('loadingCard').innerHTML = `
+                    <div class="error-icon">×</div>
+                    <h2>加载错误</h2>
+                    <p>页面资源加载失败,请刷新重试</p>
+                    <button class="btn btn-primary" onclick="location.reload()">刷新页面</button>
+                `;
             }
-
-            init() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const code = urlParams.get('code');
-                
-                if (!code) {
-                    this.showError('缺少验证码参数');
-                    return;
-                }
-
-                this.verifyCode(code);
-            }
-
-            async verifyCode(code) {
-                try {
-                    // 获取验证码数据
-                    const codesData = await this.fetchCodesData();
-                    const codeInfo = codesData.find(item => item.code === code);
-
-                    if (!codeInfo) {
-                        this.showInvalid();
-                        return;
-                    }
-
-                    document.getElementById('codeDisplay').textContent = code;
-                    document.getElementById('verifyTime').textContent = new Date().toLocaleString('zh-CN');
-
-                    if (codeInfo.activated) {
-                        this.showAlreadyActivated(codeInfo.activation_date);
-                    } else {
-                        this.showValid(code, codeInfo);
-                    }
-
-                } catch (error) {
-                    console.error('验证失败:', error);
-                    this.showError('验证过程中发生错误');
-                }
-            }
-
-            async fetchCodesData() {
-                // 这里使用GitHub API作为数据源
-                // 实际部署时需要配置GitHub token
-                const response = await fetch(`${this.apiBase}/codes.json`, {
-                    headers: {
-                        'Authorization': `token ${this.token}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('无法获取验证数据');
-                }
-
-                const data = await response.json();
-                const content = atob(data.content);
-                return JSON.parse(content);
-            }
-
-            async activateCode(code, codeInfo) {
-                try {
-                    // 更新激活状态
-                    const activationTime = new Date().toISOString();
-                    
-                    // 更新本地显示
-                    document.getElementById('activationTime').textContent = new Date().toLocaleString('zh-CN');
-                    document.getElementById('activationResult').classList.remove('hidden');
-                    document.getElementById('activateBtn').style.display = 'none';
-
-                    // 记录激活信息到本地存储（临时方案）
-                    const activations = JSON.parse(localStorage.getItem('activations') || '[]');
-                    activations.push({
-                        code: code,
-                        activation_time: activationTime,
-                        user_agent: navigator.userAgent,
-                        timestamp: Date.now()
-                    });
-                    localStorage.setItem('activations', JSON.stringify(activations));
-
-                    // 实际部署时，这里应该调用GitHub API更新数据
-                    // await this.updateCodeData(code, activationTime);
-
-                } catch (error) {
-                    console.error('激活失败:', error);
-                    alert('激活失败，请重试');
-                }
-            }
-
-            showValid(code, codeInfo) {
-                this.hideAllCards();
-                document.getElementById('validCard').classList.remove('hidden');
-                
-                document.getElementById('activateBtn').onclick = () => {
-                    this.activateCode(code, codeInfo);
-                };
-            }
-
-            showInvalid() {
-                this.hideAllCards();
-                document.getElementById('invalidCard').classList.remove('hidden');
-            }
-
-            showAlreadyActivated(activationDate) {
-                this.hideAllCards();
-                document.getElementById('alreadyActivatedCard').classList.remove('hidden');
-                document.getElementById('existingActivationTime').textContent = 
-                    new Date(activationDate).toLocaleString('zh-CN');
-            }
-
-            showError(message) {
-                this.hideAllCards();
-                document.getElementById('errorCard').classList.remove('hidden');
-                document.getElementById('errorCard').querySelector('p').textContent = message;
-            }
-
-            hideAllCards() {
-                document.querySelectorAll('.card').forEach(card => {
-                    card.classList.add('hidden');
-                });
-            }
-        }
-
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            new BookVerifier();
         });
+        
+        // 页面加载超时处理
+        setTimeout(function() {
+            if (!window.BookVerifier) {
+                document.getElementById('loadingDetail').textContent = '加载超时,请刷新页面';
+                setTimeout(function() {
+                    if (!window.BookVerifier) {
+                        location.reload();
+                    }
+                }, 3000);
+            }
+        }, 10000);
     </script>
 </body>
-</html> 
+</html>
