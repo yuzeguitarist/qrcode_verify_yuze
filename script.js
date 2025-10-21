@@ -111,18 +111,45 @@ class BookVerifier {
         const activationInfo = document.getElementById('activationInfo');
         const activationTime = document.getElementById('activationTime');
         const activationCount = document.getElementById('activationCount');
+        const purchaseTypeInfo = document.getElementById('purchaseTypeInfo');
 
         // 填充数据
         codeDisplay.textContent = codeInfo.code;
         verifyTime.textContent = this.formatDateTime(new Date());
         
-        // 激活状态
-        if (codeInfo.is_first_activation) {
-            activationStatus.textContent = '首次激活';
-            activationStatus.style.color = '#000000';
+        // 检查是否为共享验证码(电子版)
+        if (codeInfo.is_shared || codeInfo.code_type === 'digital') {
+            // 显示电子版特殊提示
+            if (purchaseTypeInfo) {
+                purchaseTypeInfo.classList.remove('hidden');
+                purchaseTypeInfo.innerHTML = `
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                padding: 15px; 
+                                border-radius: 10px; 
+                                margin: 15px 0; 
+                                color: white;
+                                box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <p style="margin: 0; font-size: 16px; font-weight: bold;">
+                            🎵 电子版乐谱
+                        </p>
+                        <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.95;">
+                            此为从个人网站购买的正版电子版本
+                        </p>
+                    </div>
+                `;
+            }
+            activationStatus.textContent = '电子版 - 已验证';
+            activationStatus.style.color = '#667eea';
             activationStatus.style.fontWeight = 'bold';
         } else {
-            activationStatus.textContent = '已激活';
+            // 实体版验证码
+            if (codeInfo.is_first_activation) {
+                activationStatus.textContent = '首次激活';
+                activationStatus.style.color = '#000000';
+                activationStatus.style.fontWeight = 'bold';
+            } else {
+                activationStatus.textContent = '已激活';
+            }
         }
 
         // 显示激活信息
