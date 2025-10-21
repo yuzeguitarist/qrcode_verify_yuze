@@ -4,8 +4,8 @@
  */
 
 // Supabase配置 - 需要替换为实际的项目配置
-const SUPABASE_URL = 'https://exyayqtajrnmwusetirb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4eWF5cXRhanJubXd1c2V0aXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MDAwMzUsImV4cCI6MjA3NTA3NjAzNX0.pAd8eoKtlVtAwIsvJqC2Wm9VghhPYd7sJhDGLkatn3w';
+const SUPABASE_URL = 'https://eakahyljpgdoreeuzrnc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVha2FoeWxqcGdkb3JlZXV6cm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDIzMzMsImV4cCI6MjA3NjYxODMzM30.u_ieJuot-XKKXZU0TTjZZ_BBs0qG0zNCukJm8ovqfqY';
 
 // 初始化Supabase客户端
 let supabase;
